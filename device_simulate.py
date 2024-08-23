@@ -4,17 +4,15 @@ import soundfile as sf
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-audio_path = 'original_audio_by_device_A.wav'
-impulse_path = 'impulse_response_by_device_B.wav'
-
+audio_path = 'D:\original_audio_by_device_A.wav'
+impulse_path = 'D:\impulse_response_by_device_B.wav'
 
 def plot_waveform(signal, sr):
     # Calculate the duration of the audio file
     duration = len(signal) / sr
 
     # Create a time axis for the waveform plot
-    time = librosa.times_like(signal, sr=sr)
+    time = np.linspace(0, duration, len(signal))
 
     # Create the plot
     plt.figure(figsize=(10, 5))
@@ -24,15 +22,14 @@ def plot_waveform(signal, sr):
     plt.title(f'Waveform ({duration:.2f} seconds)')
     plt.show()
 
-
 def device_simulate():
     # Load the WAV file recorded by device A
-    org_signal, fs = librosa.load(audio_path, sr=sr)
-    # plot_waveform(org_signal, fs)
+    org_signal, fs = librosa.load(audio_path, sr=None)  # Use sr=None to load the original sampling rate
+    plot_waveform(org_signal, fs)
 
     # Load the impulse response recorded with device B
-    ir_signal, ir_fs = librosa.load(impulse_path, sr=sr)
-    # plot_waveform(ir_signal, ir_fs)
+    ir_signal, ir_fs = librosa.load(impulse_path, sr=None)  # Use sr=None to load the original sampling rate
+    plot_waveform(ir_signal, ir_fs)
 
     # Resample the impulse response if necessary to match the sampling rate of the recording
     if fs != ir_fs:
@@ -44,14 +41,13 @@ def device_simulate():
     # Keep the audio length consistent
     if len(convolved_signal) > len(org_signal):
         convolved_signal = convolved_signal[:len(org_signal)]
-    # plot_waveform(convolved_signal, fs)
+    plot_waveform(convolved_signal, fs)
 
     # Normalization
     convolved_signal = convolved_signal / np.max(np.abs(convolved_signal))
 
     # Export the resulting signal as a new WAV file
-    sf.write('simulated_audio.wav', audio_simulated, samplerate=fs)
-
+    sf.write('simulated_audio.wav', convolved_signal, samplerate=fs)
 
 if __name__ == '__main__':
     device_simulate()
